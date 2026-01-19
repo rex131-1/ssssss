@@ -17,7 +17,6 @@
             min-height: 100vh; /* 画面の高さ一杯に広げる */
             overflow-x: hidden;
         }
-
         /* メインカード：サイズを大きくし、レスポンシブに対応 */
         .card {
             background: #222;
@@ -29,7 +28,6 @@
             box-sizing: border-box;
             text-align: center;
         }
-
         /* ヘッダー・タイトルの強調 */
         h2 {
             color: #00ffcc;
@@ -37,7 +35,6 @@
             margin-bottom: 25px;
             letter-spacing: 1px;
         }
-
         /* 統計ボックス：数字を強調 */
         .stat-box {
             display: flex;
@@ -59,7 +56,6 @@
             color: #ffcc00;
             line-height: 1;
         }
-
         /* 入力エリア */
         .input-group {
             margin-bottom: 30px;
@@ -79,7 +75,6 @@
             text-align: center;
             outline: none;
         }
-
         /* ボタンのデザイン：押しやすさ重視 */
         button {
             font-size: 1.5rem;
@@ -104,7 +99,6 @@
             font-size: 1.1rem;
             margin-top: 20px;
         }
-
         /* 履歴エリア */
         .history {
             margin-top: 30px;
@@ -152,7 +146,6 @@
                 <div id="mprValue" class="stat-value">0.00</div>
             </div>
         </div>
-
         <div class="input-group">
             <p>今回のマーク数 (0〜9)</p>
             <input type="number" id="roundScoreInput" value="0" min="0" max="9" inputmode="numeric" onfocus="this.select()">
@@ -166,7 +159,6 @@
         <button class="secondary" onclick="resetGame()">リセット</button>
     </div>
 </div>
-
 <script>
     let currentRound = 1;
     let maxRounds = 8;
@@ -180,13 +172,10 @@
         document.getElementById('game').style.display = 'block';
         updateDisplay();
     }
-
     function submitRound() {
         const scoreInput = document.getElementById('roundScoreInput');
         const score = parseInt(scoreInput.value) || 0;
-        
         scores.push(score);
-        
         if (currentRound >= maxRounds) {
             const total = scores.reduce((a, b) => a + b, 0);
             const avg = (total / maxRounds).toFixed(2);
@@ -202,7 +191,6 @@
             scoreInput.focus();
         }
     }
-
     function updateDisplay() {
         const total = scores.reduce((a, b) => a + b, 0);
         const avg = scores.length > 0 ? (total / scores.length).toFixed(2) : "0.00";
@@ -217,13 +205,11 @@
             document.getElementById('historyLog').innerText = "履歴: ";
         }
     }
-
     function resetGame() {
         document.getElementById('setup').style.display = 'block';
         document.getElementById('game').style.display = 'none';
         document.getElementById('roundScoreInput').value = 0;
     }
 </script>
-
 </body>
 </html>
