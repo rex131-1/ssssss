@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クリケット平均カウンター Pro</title>
+    <style>
+        /* 全体のレイアウト調整：常に中央配置 */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #121212;
+            color: #eee;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* 画面の高さ一杯に広げる */
+            overflow-x: hidden;
+        }
+
+        /* メインカード：サイズを大きくし、レスポンシブに対応 */
+        .card {
+            background: #222;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px; /* PCでの最大幅 */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* ヘッダー・タイトルの強調 */
+        h2 {
+            color: #00ffcc;
+            font-size: 2rem;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        /* 統計ボックス：数字を強調 */
+        .stat-box {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #444;
+        }
+        .stat-label {
+            font-size: 1rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 3rem; /* 数字を非常に大きく */
+            font-weight: bold;
+            color: #ffcc00;
+            line-height: 1;
+        }
+
+        /* 入力エリア */
+        .input-group {
+            margin-bottom: 30px;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        input[type="number"] {
+            font-size: 2.5rem; /* 入力文字を大きく */
+            width: 120px;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #00ffcc;
+            background: #1a1a1a;
+            color: white;
+            text-align: center;
+            outline: none;
+        }
+
+        /* ボタンのデザイン：押しやすさ重視 */
+        button {
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            width: 100%;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 12px;
+            border: none;
+            background: #00ffcc;
+            color: #1a1a1a;
+            font-weight: bold;
+            transition: transform 0.1s, background 0.2s;
+        }
+        button:active {
+            transform: scale(0.98);
+            background: #00e6b8;
+        }
+        button.secondary {
+            background: #444;
+            color: #ccc;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        /* 履歴エリア */
+        .history {
+            margin-top: 30px;
+            text-align: left;
+            font-size: 1.1rem;
+            max-height: 120px;
+            overflow-y: auto;
+            border-top: 1px solid #444;
+            padding-top: 15px;
+            color: #888;
+        }
+
+        /* PC・タブレット向けの調整 */
+        @media (min-width: 600px) {
+            .card {
+                padding: 40px;
+            }
+            h2 { font-size: 2.5rem; }
+            .stat-value { font-size: 3.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="setup">
+        <h2>練習設定</h2>
+        <div class="input-group">
+            <p>合計ラウンド数</p>
+            <input type="number" id="totalRoundsInput" value="8" min="1" inputmode="numeric">
+        </div>
+        <button onclick="startGame()">スタート！</button>
+    </div>
+
+    <div id="game" style="display:none;">
+        <h2 id="roundTitle">Round 1 / 8</h2>
+        
+        <div class="stat-box">
+            <div class="stat-item">
+                <div class="stat-label">Total</div>
+                <div id="totalMarks" class="stat-value">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">MPR</div>
+                <div id="mprValue" class="stat-value">0.00</div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <p>今回のマーク数 (0〜9)</p>
+            <input type="number" id="roundScoreInput" value="0" min="0" max="9" inputmode="numeric" onfocus="this.select()">
+        </div>
+        
+        <button onclick="submitRound()">スコア入力</button>
+        
+        <div class="history" id="historyLog">
+            履歴: 
+        </div>
+        <button class="secondary" onclick="resetGame()">リセット</button>
+    </div>
+</div>
+
+<script>
+    let currentRound = 1;
+    let maxRounds = 8;
+    let scores = [];
+
+    function startGame() {
+        maxRounds = parseInt(document.getElementById('totalRoundsInput').value) || 8;
+        currentRound = 1;
+        scores = [];
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('game').style.display = 'block';
+        updateDisplay();
+    }
+
+    function submitRound() {
+        const scoreInput = document.getElementById('roundScoreInput');
+        const score = parseInt(scoreInput.value) || 0;
+        
+        scores.push(score);
+        
+        if (currentRound >= maxRounds) {
+            const total = scores.reduce((a, b) => a + b, 0);
+            const avg = (total / maxRounds).toFixed(2);
+            updateDisplay(); // 最後の表示を更新
+            setTimeout(() => {
+                alert(`お疲れ様でした！\n全${maxRounds}R 終了\n合計: ${total} / 平均: ${avg}`);
+                resetGame();
+            }, 100);
+        } else {
+            currentRound++;
+            updateDisplay();
+            scoreInput.value = 0;
+            scoreInput.focus();
+        }
+    }
+
+    function updateDisplay() {
+        const total = scores.reduce((a, b) => a + b, 0);
+        const avg = scores.length > 0 ? (total / scores.length).toFixed(2) : "0.00";
+        
+        document.getElementById('roundTitle').innerText = `Round ${currentRound} / ${maxRounds}`;
+        document.getElementById('totalMarks').innerText = total;
+        document.getElementById('mprValue').innerText = avg;
+        
+        if (scores.length > 0) {
+            document.getElementById('historyLog').innerText = "履歴: " + scores.join(" - ");
+        } else {
+            document.getElementById('historyLog').innerText = "履歴: ";
+        }
+    }
+
+    function resetGame() {
+        document.getElementById('setup').style.display = 'block';
+        document.getElementById('game').style.display = 'none';
+        document.getElementById('roundScoreInput').value = 0;
+    }
+</script>
+
+</body>
+</html>
